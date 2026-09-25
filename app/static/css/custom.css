@@ -1,0 +1,271 @@
+/* ==========================================================
+   Attendance Monitoring System - Custom Stylesheet
+   ========================================================== */
+
+:root {
+    --primary-color: #1e3a8a;
+    --primary-hover: #172554;
+    --secondary-color: #0f766e;
+    --accent-color: #0284c7;
+    --bg-light: #f8fafc;
+    --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --border-color: #e2e8f0;
+}
+
+body {
+    background-color: var(--bg-light);
+    color: #1e293b;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navbar */
+.navbar-custom {
+    background: linear-gradient(135deg, #1e3a8a 0%, #0f766e 100%);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-custom .navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.nav-link {
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+    color: #e2e8f0 !important;
+}
+
+/* Card Styling */
+.card {
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.card-header-custom {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 600;
+}
+
+/* Metric Counter Cards */
+.metric-card {
+    border-left: 5px solid var(--primary-color);
+}
+.metric-card.success {
+    border-left-color: #16a34a;
+}
+.metric-card.warning {
+    border-left-color: #ca8a04;
+}
+.metric-card.danger {
+    border-left-color: #dc2626;
+}
+.metric-card.info {
+    border-left-color: #0284c7;
+}
+
+.metric-number {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.metric-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Tables */
+.table th {
+    background-color: #f1f5f9;
+    color: #334155;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Badges */
+.badge-present {
+    background-color: #dcfce7;
+    color: #15803d;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.badge-absent {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.badge-late {
+    background-color: #fef3c7;
+    color: #b45309;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+/* Attendance Quick Status Buttons */
+.btn-status-group .btn-check:checked + .btn-outline-success {
+    background-color: #16a34a;
+    color: white;
+}
+.btn-status-group .btn-check:checked + .btn-outline-danger {
+    background-color: #dc2626;
+    color: white;
+}
+.btn-status-group .btn-check:checked + .btn-outline-warning {
+    background-color: #ca8a04;
+    color: white;
+}
+
+/* Low Attendance Alert Box */
+.alert-low-attendance {
+    background: #fef2f2;
+    border-left: 6px solid #dc2626;
+    color: #991b1b;
+}
+
+/* Matrix Table for Monthly Report */
+.matrix-table {
+    font-size: 0.82rem;
+}
+.matrix-table th, .matrix-table td {
+    padding: 4px 6px;
+    text-align: center;
+    vertical-align: middle;
+}
+.matrix-p {
+    color: #16a34a;
+    font-weight: 700;
+}
+.matrix-a {
+    color: #dc2626;
+    font-weight: 700;
+    background-color: #fee2e2;
+}
+.matrix-l {
+    color: #ca8a04;
+    font-weight: 700;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+    background-color: #ffffff;
+    border-top: 1px solid var(--border-color);
+}
+
+/* ==========================================================
+   PRINT STYLESHEET (@media print)
+   ========================================================== */
+@media print {
+    body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt;
+    }
+
+    /* Hide non-printable UI elements */
+    .navbar,
+    .no-print,
+    .btn,
+    .alert,
+    footer,
+    .pagination,
+    .form-filter-bar {
+        display: none !important;
+    }
+
+    .container, .container-fluid {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    /* Print Header (College official document layout) */
+    .print-header {
+        display: block !important;
+        text-align: center;
+        border-bottom: 2px solid #000;
+        padding-bottom: 12px;
+        margin-bottom: 16px;
+    }
+
+    .print-header h2 {
+        font-size: 18pt;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .print-header p {
+        font-size: 11pt;
+        margin: 4px 0 0 0;
+    }
+
+    /* Print Signatures Block */
+    .print-signatures {
+        display: flex !important;
+        justify-content: space-between;
+        margin-top: 50px;
+        page-break-inside: avoid;
+    }
+
+    .print-signatures .sig-box {
+        text-align: center;
+        width: 200px;
+        border-top: 1px solid #000;
+        padding-top: 8px;
+        font-size: 10pt;
+    }
+
+    /* Table format in print */
+    .table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        font-size: 10pt !important;
+    }
+
+    .table th, .table td {
+        border: 1px solid #333 !important;
+        padding: 6px !important;
+    }
+
+    .badge {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background: transparent !important;
+    }
+}

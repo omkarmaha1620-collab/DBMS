@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% block title %}Attendance Reports Center{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">Attendance Reports &amp; Analytics Hub</h3>
+        <p class="text-muted mb-0">Generate, analyze, and print comprehensive attendance registers and defaulter lists</p>
+    </div>
+    <div>
+        <a href="{{ url_for('reports.low_attendance') }}" class="btn btn-danger">
+            <i class="bi bi-exclamation-triangle me-1"></i> Low Attendance Report ({{ low_count }} Defaulters)
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- 1. Daily Attendance Report -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 card-hover shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-3 bg-primary-subtle text-primary p-3 me-3 fs-3">
+                        <i class="bi bi-calendar-check-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Daily Register</h5>
+                        <small class="text-muted">Class &amp; Subject per day</small>
+                    </div>
+                </div>
+                <p class="text-muted small">
+                    View student-by-student presence/absence register for any selected class, subject, and date with printable roll sheet.
+                </p>
+                <a href="{{ url_for('reports.daily') }}" class="btn btn-outline-primary w-100">
+                    Open Daily Report &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Monthly Matrix Report -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 card-hover shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-3 bg-success-subtle text-success p-3 me-3 fs-3">
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Monthly Matrix</h5>
+                        <small class="text-muted">Day 1 to 31 attendance grid</small>
+                    </div>
+                </div>
+                <p class="text-muted small">
+                    Complete monthly classroom sheet showing attendance status across all days of the month for every enrolled student.
+                </p>
+                <a href="{{ url_for('reports.monthly') }}" class="btn btn-outline-success w-100">
+                    Open Monthly Matrix &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Subject-Wise Report -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 card-hover shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-3 bg-info-subtle text-info p-3 me-3 fs-3">
+                        <i class="bi bi-journal-check"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Subject-wise Summary</h5>
+                        <small class="text-muted">Term percentage per course</small>
+                    </div>
+                </div>
+                <p class="text-muted small">
+                    Consolidated subject performance list comparing classes held, attended, percentages, and defaulter status.
+                </p>
+                <a href="{{ url_for('reports.subject_wise') }}" class="btn btn-outline-info w-100">
+                    Open Subject Report &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Overall Class Report -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 card-hover shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-3 bg-warning-subtle text-warning p-3 me-3 fs-3">
+                        <i class="bi bi-pie-chart-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Overall Class Report</h5>
+                        <small class="text-muted">Aggregate cross-subject report</small>
+                    </div>
+                </div>
+                <p class="text-muted small">
+                    Comprehensive cross-subject aggregate for an entire section with overall percentages and CSV export capability.
+                </p>
+                <a href="{{ url_for('reports.overall') }}" class="btn btn-outline-warning text-dark w-100">
+                    Open Overall Report &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Low Attendance (Defaulter) Report -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 card-hover shadow-sm border-danger-subtle">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-3 bg-danger-subtle text-danger p-3 me-3 fs-3">
+                        <i class="bi bi-exclamation-octagon-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0 text-danger">Defaulter Notice List</h5>
+                        <small class="text-muted">Below {{ min_pct }}% threshold</small>
+                    </div>
+                </div>
+                <p class="text-muted small">
+                    Dynamically queries <code>view_low_attendance_students</code> to generate notice sheets with required recovery lectures and contact info.
+                </p>
+                <a href="{{ url_for('reports.low_attendance') }}" class="btn btn-danger w-100">
+                    Open Defaulter List &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Student-Wise Report -->
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 card-hover shadow-sm">
+            <div class="card-body p-4">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-3 bg-secondary-subtle text-dark p-3 me-3 fs-3">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold mb-0">Student Comprehensive</h5>
+                        <small class="text-muted">Individual student card</small>
+                    </div>
+                </div>
+                <p class="text-muted small">
+                    Complete multi-course dossier for a single selected student, ideal for parent-teacher conferences or office records.
+                </p>
+                <a href="{{ url_for('reports.student_report') }}" class="btn btn-outline-secondary w-100">
+                    Open Student Card &rarr;
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

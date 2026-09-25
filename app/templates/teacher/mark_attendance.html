@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Mark Attendance{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">Record Classroom Attendance</h3>
+        <p class="text-muted mb-0">Select class, course, and lecture date to populate student roll sheet</p>
+    </div>
+    {% if selected_class_id and selected_subject_id and already_marked %}
+    <a href="{{ url_for('teacher.edit_attendance', class_id=selected_class_id, subject_id=selected_subject_id, date=selected_date) }}" class="btn btn-warning">
+        <i class="bi bi-pencil-square me-1"></i> Switch to Edit Mode
+    </a>
+    {% endif %}
+</div>
+
+<!-- Class & Date Selection Bar -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('teacher.mark_attendance') }}" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Class &amp; Subject Allocation *</label>
+                <select name="class_subject_combo" class="form-select" id="courseSelector" onchange="splitCombo(this.value)">
+                    <option value="">-- Choose Course --</option>
+                    {% for a in assigned %}
+                    {% set combo = a.class_id ~ '_' ~ a.subject_id %}
+                    {% set is_sel = (selected_class_id == a.class_id and selected_subject_id == a.subject_id) %}
+                    <option value="{{ combo }}" {% if is_sel %}selected{% endif %}>
+                        {{ a.class_label }} &bull; {{ a.subject_name }} ({{ a.subject_code }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="class_id" id="hidden_class_id" value="{{ selected_class_id or '' }}">
+                <input type="hidden" name="subject_id" id="hidden_subject_id" value="{{ selected_subject_id or '' }}">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Lecture Date *</label>
+                <input type="date" name="date" class="form-control" value="{{ selected_date }}" required>
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-people-fill me-1"></i> Load Student Roster
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if already_marked %}
+<div class="alert alert-warning d-flex align-items-center mb-4">
+    <i class="bi bi-exclamation-triangle-fill fs-4 me-3"></i>
+    <div>
+        <strong>Notice:</strong> Attendance for this lecture date ({{ selected_date }}) has already been recorded in the database.
+        Submitting this form will safely update existing records inside an ACID database transaction.
+    </div>
+</div>
+{% endif %}
+
+{% if students %}
+<!-- Interactive Marking Form -->
+<form method="POST" action="{{ url_for('teacher.mark_attendance') }}">
+    <input type="hidden" name="class_id" value="{{ selected_class_id }}">
+    <input type="hidden" name="subject_id" value="{{ selected_subject_id }}">
+    <input type="hidden" name="attendance_date" value="{{ selected_date }}">
+
+    <!-- Action Toolbar with Fast Buttons & Counters -->
+    <div class="card mb-3 bg-light border-0 shadow-sm">
+        <div class="card-body py-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-bold text-dark me-2">Quick Toggles:</span>
+                <button type="button" class="btn btn-sm btn-success fw-semibold" onclick="markAllStatus('Present')">
+                    <i class="bi bi-check-all me-1"></i> Mark All Present
+                </button>
+                <button type="button" class="btn btn-sm btn-danger fw-semibold" onclick="markAllStatus('Absent')">
+                    <i class="bi bi-x-circle me-1"></i> Mark All Absent
+                </button>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <span class="badge bg-success fs-6 py-2 px-3">Present: <span id="count-present">0</span></span>
+                <span class="badge bg-danger fs-6 py-2 px-3">Absent: <span id="count-absent">0</span></span>
+                <span class="badge bg-warning text-dark fs-6 py-2 px-3">Late: <span id="count-late">0</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Attendance Roster Table -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-card-checklist text-primary me-2"></i> Class Roll Sheet ({{ students|length }} Enrolled Students)</h5>
+            <span class="text-muted small">Date: <strong>{{ selected_date }}</strong></span>
+        </div>
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Roll Number</th>
+                        <th style="width: 25%;">Student Name</th>
+                        <th style="width: 35%; text-align: center;">Attendance Status</th>
+                        <th style="width: 25%;">Remarks (Optional)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for st in students %}
+                    <input type="hidden" name="student_ids[]" value="{{ st.student_id }}">
+                    {% set current_status = st.existing_status or 'Present' %}
+                    <tr>
+                        <td><strong class="text-primary">{{ st.roll_number }}</strong></td>
+                        <td class="fw-semibold">{{ st.student_name }}</td>
+                        <td class="text-center">
+                            <div class="btn-group btn-status-group" role="group">
+                                <!-- Present Radio -->
+                                <input type="radio" class="btn-check attendance-radio" 
+                                       name="status_{{ st.student_id }}" 
+                                       id="present_{{ st.student_id }}" 
+                                       value="Present" 
+                                       {% if current_status == 'Present' %}checked{% endif %}>
+                                <label class="btn btn-outline-success btn-sm px-3" for="present_{{ st.student_id }}">
+                                    <i class="bi bi-check-lg"></i> Present
+                                </label>
+
+                                <!-- Late Radio -->
+                                <input type="radio" class="btn-check attendance-radio" 
+                                       name="status_{{ st.student_id }}" 
+                                       id="late_{{ st.student_id }}" 
+                                       value="Late" 
+                                       {% if current_status == 'Late' %}checked{% endif %}>
+                                <label class="btn btn-outline-warning btn-sm px-3" for="late_{{ st.student_id }}">
+                                    <i class="bi bi-clock"></i> Late
+                                </label>
+
+                                <!-- Absent Radio -->
+                                <input type="radio" class="btn-check attendance-radio" 
+                                       name="status_{{ st.student_id }}" 
+                                       id="absent_{{ st.student_id }}" 
+                                       value="Absent" 
+                                       {% if current_status == 'Absent' %}checked{% endif %}>
+                                <label class="btn btn-outline-danger btn-sm px-3" for="absent_{{ st.student_id }}">
+                                    <i class="bi bi-x-lg"></i> Absent
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" name="remarks_{{ st.student_id }}" 
+                                   class="form-control form-control-sm" 
+                                   placeholder="e.g. Approved leave" 
+                                   value="{{ st.existing_remarks or '' }}">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-white py-3 text-end">
+            <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-secondary me-2">Cancel</a>
+            <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold">
+                <i class="bi bi-cloud-arrow-up-fill me-1"></i> Save Attendance Records
+            </button>
+        </div>
+    </div>
+</form>
+{% elif selected_class_id %}
+<div class="card p-5 text-center text-muted">
+    <i class="bi bi-people display-4 mb-2"></i>
+    <h5>No students enrolled in this class yet.</h5>
+    <p>Please contact the Administrator to enroll students in this class.</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/attendance.js') }}"></script>
+<script>
+function splitCombo(val) {
+    if (val) {
+        const parts = val.split('_');
+        document.getElementById('hidden_class_id').value = parts[0];
+        document.getElementById('hidden_subject_id').value = parts[1];
+    }
+}
+</script>
+{% endblock %}

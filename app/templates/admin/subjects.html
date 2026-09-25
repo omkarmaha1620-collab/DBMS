@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Manage Subjects{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">Manage Curriculum Subjects</h3>
+        <p class="text-muted mb-0">Courses, credit units, and instructional subject classifications</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+        <i class="bi bi-plus-circle me-1"></i> Add Subject
+    </button>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-journal-bookmark-fill text-primary me-2"></i> Subject Catalog ({{ subjects|length }})</h5>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Subject Code</th>
+                            <th>Subject Name</th>
+                            <th>Credits</th>
+                            <th>Type</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sub in subjects %}
+                        <tr>
+                            <td><strong class="text-primary font-monospace">{{ sub.subject_code }}</strong></td>
+                            <td class="fw-semibold">{{ sub.subject_name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ sub.credits }} Credits</span></td>
+                            <td>
+                                {% if sub.subject_type == 'Theory' %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle">Theory</span>
+                                {% elif sub.subject_type == 'Practical' %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Practical / Lab</span>
+                                {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Elective</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <form method="POST" action="{{ url_for('admin.subjects') }}" onsubmit="return confirm('Delete this subject? This cascades to attendance records.');" class="d-inline">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="subject_id" value="{{ sub.id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">No subjects added.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Subject Form -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-plus-square me-2 text-primary"></i> Quick Add Subject</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin.subjects') }}">
+                    <input type="hidden" name="action" value="add">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Subject Code *</label>
+                        <input type="text" name="subject_code" class="form-control" required placeholder="e.g. CS501" style="text-transform: uppercase;">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Subject Name *</label>
+                        <input type="text" name="subject_name" class="form-control" required placeholder="e.g. Database Management Systems">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Credits *</label>
+                        <input type="number" name="credits" class="form-control" min="1" max="6" value="3" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Subject Type *</label>
+                        <select name="subject_type" class="form-select">
+                            <option value="Theory">Theory</option>
+                            <option value="Practical">Practical / Lab</option>
+                            <option value="Elective">Elective</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-circle me-1"></i> Add Subject</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addSubjectModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.subjects') }}">
+                <input type="hidden" name="action" value="add">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Add New Subject</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Subject Code *</label>
+                        <input type="text" name="subject_code" class="form-control" required placeholder="e.g. CS501">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Subject Name *</label>
+                        <input type="text" name="subject_name" class="form-control" required placeholder="e.g. Database Systems">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Credits</label>
+                        <input type="number" name="credits" class="form-control" value="3">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Type</label>
+                        <select name="subject_type" class="form-select">
+                            <option value="Theory">Theory</option>
+                            <option value="Practical">Practical</option>
+                            <option value="Elective">Elective</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Subject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

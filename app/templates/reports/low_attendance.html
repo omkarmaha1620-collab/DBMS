@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Low Attendance Defaulter Report{% endblock %}
+
+{% block content %}
+<!-- Official Print Header -->
+<div class="print-header d-none">
+    <h2>{{ institution_name }}</h2>
+    <p class="text-uppercase fw-bold mb-1 text-danger">OFFICIAL ATTENDANCE DEFAULTER &amp; SHORTAGE NOTICE</p>
+    <p class="mb-0">
+        Students listed below possess attendance strictly below the university statutory requirement of <strong>{{ min_pct }}%</strong>.
+    </p>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 no-print">
+    <div>
+        <h3 class="fw-bold mb-0 text-danger"><i class="bi bi-exclamation-octagon-fill me-2"></i> Low Attendance Defaulter Report</h3>
+        <p class="text-muted mb-0">Powered dynamically by MySQL View <code>view_low_attendance_students</code> (Cutoff: &lt; {{ min_pct }}%)</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if defaulters %}
+        <a href="{{ url_for('reports.export_csv', type='low-attendance') }}" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export Defaulter CSV
+        </a>
+        <button type="button" class="btn btn-danger" onclick="window.print()">
+            <i class="bi bi-printer-fill me-1"></i> Print Official Notice
+        </button>
+        {% endif %}
+        <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Reports Hub
+        </a>
+    </div>
+</div>
+
+<!-- Class Filter (no-print) -->
+<div class="card mb-4 shadow-sm no-print">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('reports.low_attendance') }}" class="row g-3 align-items-end">
+            <div class="col-md-9">
+                <label class="form-label fw-semibold">Filter by Class Section</label>
+                <select name="class_id" class="form-select">
+                    <option value="">-- All Classes &amp; Sections (Campus-wide) --</option>
+                    {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class == c.id %}selected{% endif %}>{{ c.class_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-dark w-100"><i class="bi bi-funnel me-1"></i> Filter Defaulters</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Defaulter Summary Banner -->
+<div class="alert alert-danger shadow-sm border-danger p-3 mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div>
+            <i class="bi bi-shield-exclamation fs-4 me-2"></i>
+            <strong>Action Notice:</strong> Found <span class="badge bg-danger fs-6 px-2 py-1">{{ defaulters|length }} Subject Defaulter Cases</span> below {{ min_pct }}%.
+        </div>
+        <div class="small text-muted no-print">
+            Students must attend the indicated recovery classes consecutively to restore examination eligibility.
+        </div>
+    </div>
+</div>
+
+<!-- Defaulters Data Table -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr class="table-danger">
+                    <th>#</th>
+                    <th>Roll Number</th>
+                    <th>Student Name</th>
+                    <th>Class</th>
+                    <th>Subject</th>
+                    <th class="text-center">Held</th>
+                    <th class="text-center">Attended</th>
+                    <th class="text-center">Current %</th>
+                    <th class="text-center">Recovery Lectures Needed</th>
+                    <th>Contact Phone</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in defaulters %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong class="font-monospace text-danger">{{ d.roll_number }}</strong></td>
+                    <td class="fw-semibold">{{ d.student_name }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ d.class_display }}</span></td>
+                    <td>
+                        <span class="font-monospace text-primary">{{ d.subject_code }}</span>
+                        <div class="small text-muted">{{ d.subject_name }}</div>
+                    </td>
+                    <td class="text-center">{{ d.total_classes }}</td>
+                    <td class="text-center text-success fw-bold">{{ d.attended_classes }}</td>
+                    <td class="text-center">
+                        <span class="badge bg-danger fs-6 px-2 py-1">{{ d.attendance_percentage }}%</span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-dark px-3 py-1">
+                            +{{ d.shortage }} Lectures
+                        </span>
+                    </td>
+                    <td>
+                        <small class="text-muted"><i class="bi bi-telephone me-1"></i> {{ d.phone or 'N/A' }}</small>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="10" class="text-center py-5 text-success fw-bold">
+                        <i class="bi bi-check-circle-fill display-5 d-block mb-2 text-success"></i>
+                        Excellent! No students have attendance below {{ min_pct }}% in this selection.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Official Signatures Block (Print Mode Only) -->
+<div class="print-signatures d-none">
+    <div class="sig-box">Attendance Officer</div>
+    <div class="sig-box">Head of Department (HOD)</div>
+    <div class="sig-box">Dean / Principal</div>
+</div>
+{% endblock %}

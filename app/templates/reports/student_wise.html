@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}Student Comprehensive Report{% endblock %}
+
+{% block content %}
+<div class="print-header d-none">
+    <h2>{{ institution_name }}</h2>
+    <p class="text-uppercase fw-bold mb-1">Student Attendance Dossier</p>
+    {% if student %}
+    <p class="mb-0">
+        <strong>Name:</strong> {{ student.full_name }} &nbsp;|&nbsp;
+        <strong>Roll No:</strong> {{ student.roll_number }} &nbsp;|&nbsp;
+        <strong>Class:</strong> {{ student.class_name }} ({{ student.section }}) &nbsp;|&nbsp;
+        <strong>Semester:</strong> {{ student.semester }}
+    </p>
+    {% endif %}
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 no-print">
+    <div>
+        <h3 class="fw-bold mb-0">Student Comprehensive Report</h3>
+        <p class="text-muted mb-0">Single student complete attendance record across all courses</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if student %}
+        <button type="button" class="btn btn-outline-dark" onclick="window.print()">
+            <i class="bi bi-printer-fill me-1"></i> Print Student Report
+        </button>
+        {% endif %}
+        <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Reports Hub
+        </a>
+    </div>
+</div>
+
+<!-- Student Selector (no-print) -->
+<div class="card mb-4 shadow-sm no-print">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('reports.student_report') }}" class="row g-3 align-items-end">
+            <div class="col-md-9">
+                <label class="form-label fw-semibold">Select Student *</label>
+                <select name="student_id" class="form-select" required>
+                    <option value="">-- Choose Student from Directory --</option>
+                    {% for st in students %}
+                    <option value="{{ st.id }}" {% if selected_student == st.id %}selected{% endif %}>
+                        {{ st.roll_number }} - {{ st.full_name }} &bull; {{ st.class_label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-person-badge me-1"></i> Generate Dossier</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if student %}
+<!-- Student Info Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h4 class="fw-bold text-primary mb-1">{{ student.full_name }}</h4>
+                <div class="text-muted small">
+                    <span class="me-3"><strong>Roll No:</strong> {{ student.roll_number }}</span>
+                    <span class="me-3"><strong>Class:</strong> {{ student.class_name }} (Sec {{ student.section }})</span>
+                    <span class="me-3"><strong>Semester:</strong> {{ student.semester }}</span>
+                    <span><strong>Email:</strong> {{ student.email }}</span>
+                </div>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                {% if overall %}
+                <div class="d-inline-block text-center p-3 rounded-3 bg-light border">
+                    <div class="small text-muted text-uppercase">Overall Attendance</div>
+                    <div class="fs-3 fw-bold {% if overall.overall_pct >= min_pct %}text-success{% else %}text-danger{% endif %}">
+                        {{ overall.overall_pct or 0 }}%
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Subjects Table -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-journal-check text-primary me-2"></i> Course-wise Breakdown</h5>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Subject Name</th>
+                    <th class="text-center">Total Held</th>
+                    <th class="text-center">Attended</th>
+                    <th class="text-center">Absent</th>
+                    <th class="text-center">Attendance %</th>
+                    <th class="text-center">Eligibility</th>
+                    <th class="text-center">Deficit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subjects %}
+                {% set pct = sub.attendance_percentage|float %}
+                <tr>
+                    <td><strong class="font-monospace text-primary">{{ sub.subject_code }}</strong></td>
+                    <td class="fw-semibold">{{ sub.subject_name }}</td>
+                    <td class="text-center">{{ sub.total_classes }}</td>
+                    <td class="text-center text-success fw-bold">{{ sub.attended_classes }}</td>
+                    <td class="text-center text-danger fw-bold">{{ sub.absent_classes }}</td>
+                    <td class="text-center">
+                        <span class="fw-bold {% if pct >= min_pct %}text-success{% else %}text-danger{% endif %}">
+                            {{ sub.attendance_percentage }}%
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        {% if pct >= min_pct %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">Eligible</span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Shortage</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if pct < min_pct and sub.total_classes > 0 %}
+                        <span class="badge bg-danger">+{{ sub.shortage }}</span>
+                        {% else %}
+                        <span class="text-muted small">0</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="print-signatures d-none">
+    <div class="sig-box">Student Signature</div>
+    <div class="sig-box">Class Counselor</div>
+    <div class="sig-box">HOD CSE</div>
+</div>
+{% endif %}
+{% endblock %}

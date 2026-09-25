@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Faculty Dashboard{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">Faculty Portal</h3>
+        <p class="text-muted mb-0">Welcome, <strong>{{ session.get('full_name') }}</strong> ({{ session.get('employee_code') }}) &bull; {{ session.get('department') }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('teacher.mark_attendance') }}" class="btn btn-primary"><i class="bi bi-calendar-check me-1"></i> Mark Today's Attendance</a>
+        <a href="{{ url_for('teacher.history') }}" class="btn btn-outline-secondary"><i class="bi bi-clock-history me-1"></i> Attendance Logs</a>
+    </div>
+</div>
+
+<!-- Metrics Row -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card p-3 metric-card info card-hover">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-label">Allocated Courses</div>
+                    <div class="metric-number text-primary">{{ courses|length }}</div>
+                </div>
+                <div class="fs-1 text-primary opacity-50"><i class="bi bi-journal-bookmark-fill"></i></div>
+            </div>
+            <div class="small text-muted mt-2">Active assigned courses</div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 metric-card success card-hover">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-label">Total Lectures Taken</div>
+                    <div class="metric-number text-success">{{ total_lectures }}</div>
+                </div>
+                <div class="fs-1 text-success opacity-50"><i class="bi bi-person-check-fill"></i></div>
+            </div>
+            <div class="small text-muted mt-2">Historical lectures recorded</div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 metric-card warning card-hover">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-label">Lectures Today ({{ today_date }})</div>
+                    <div class="metric-number text-warning">{{ today_summary|length }}</div>
+                </div>
+                <div class="fs-1 text-warning opacity-50"><i class="bi bi-calendar-event-fill"></i></div>
+            </div>
+            <div class="small text-muted mt-2">Sessions recorded today</div>
+        </div>
+    </div>
+</div>
+
+<!-- Allocated Courses Card -->
+<div class="card mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-mortarboard-fill text-primary me-2"></i> My Assigned Classes &amp; Subjects</h5>
+        <span class="badge bg-light text-dark border">Term 2025-2026</span>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Class / Section</th>
+                    <th>Subject Code</th>
+                    <th>Subject Title</th>
+                    <th class="text-center">Enrolled Roster</th>
+                    <th class="text-center">Conducted Classes</th>
+                    <th class="text-end">Quick Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in courses %}
+                <tr>
+                    <td><strong class="text-primary">{{ c.class_name }} (Sec {{ c.section }})</strong></td>
+                    <td><span class="badge bg-light text-dark font-monospace border">{{ c.subject_code }}</span></td>
+                    <td class="fw-semibold">{{ c.subject_name }}</td>
+                    <td class="text-center">
+                        <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-2">
+                            {{ c.enrolled_students }} Students
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2">
+                            {{ c.lectures_taken }} Sessions
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ url_for('teacher.mark_attendance', class_id=c.class_id, subject_id=c.subject_id) }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-check2-circle me-1"></i> Mark Attendance
+                        </a>
+                        <a href="{{ url_for('teacher.history', class_id=c.class_id, subject_id=c.subject_id) }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-clock-history"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No classes or subjects assigned yet. Contact Admin.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Today's Attendance Overview -->
+{% if today_summary %}
+<div class="card">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-calendar2-check text-success me-2"></i> Attendance Recorded Today ({{ today_date }})</h5>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Class</th>
+                    <th>Subject</th>
+                    <th class="text-center">Total Present</th>
+                    <th class="text-center">Total Absent</th>
+                    <th class="text-center">Total Late</th>
+                    <th class="text-center">Rate</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in today_summary %}
+                <tr>
+                    <td><strong>{{ t.class_name }} ({{ t.section }})</strong></td>
+                    <td>{{ t.subject_name }} <small class="text-muted">({{ t.subject_code }})</small></td>
+                    <td class="text-center text-success fw-bold">{{ t.present_count }}</td>
+                    <td class="text-center text-danger fw-bold">{{ t.absent_count }}</td>
+                    <td class="text-center text-warning fw-bold">{{ t.late_count }}</td>
+                    <td class="text-center">
+                        {% set rate = (((t.present_count + t.late_count) / t.total_marked) * 100)|round(1) if t.total_marked > 0 else 0 %}
+                        <span class="badge {% if rate >= min_attendance_pct %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ rate }}%
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

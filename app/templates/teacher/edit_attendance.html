@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Edit Attendance Records{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">Modify Attendance Records</h3>
+        <p class="text-muted mb-0">Changes made here are permanently tracked by the <code>attendance_audit</code> database trigger</p>
+    </div>
+    <a href="{{ url_for('teacher.history') }}" class="btn btn-outline-secondary"><i class="bi bi-clock-history me-1"></i> Attendance Logs</a>
+</div>
+
+<!-- Selection Filter -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('teacher.edit_attendance') }}" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">Class &amp; Subject *</label>
+                <select name="class_subject_combo" class="form-select" onchange="splitCombo(this.value)">
+                    <option value="">-- Choose Course --</option>
+                    {% for a in assigned %}
+                    {% set combo = a.class_id ~ '_' ~ a.subject_id %}
+                    {% set is_sel = (selected_class_id == a.class_id and selected_subject_id == a.subject_id) %}
+                    <option value="{{ combo }}" {% if is_sel %}selected{% endif %}>
+                        {{ a.class_label }} &bull; {{ a.subject_name }} ({{ a.subject_code }})
+                    </option>
+                    {% endfor %}
+                </select>
+                <input type="hidden" name="class_id" id="hidden_class_id" value="{{ selected_class_id or '' }}">
+                <input type="hidden" name="subject_id" id="hidden_subject_id" value="{{ selected_subject_id or '' }}">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Attendance Date *</label>
+                <input type="date" name="date" class="form-control" value="{{ selected_date }}" required>
+            </div>
+
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-warning w-100 fw-semibold">
+                    <i class="bi bi-search me-1"></i> Fetch Records to Edit
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if records %}
+<form method="POST" action="{{ url_for('teacher.edit_attendance') }}">
+    <input type="hidden" name="class_id" value="{{ selected_class_id }}">
+    <input type="hidden" name="subject_id" value="{{ selected_subject_id }}">
+    <input type="hidden" name="attendance_date" value="{{ selected_date }}">
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold"><i class="bi bi-pencil-square text-warning me-2"></i> Attendance Log for {{ selected_date }} ({{ records|length }} Records)</h5>
+            <span class="badge bg-warning text-dark border"><i class="bi bi-shield-lock me-1"></i> Audit Trigger Active</span>
+        </div>
+        <div class="card-body p-0 table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Roll Number</th>
+                        <th>Student Name</th>
+                        <th class="text-center">Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in records %}
+                    <input type="hidden" name="attendance_ids[]" value="{{ r.attendance_id }}">
+                    <tr>
+                        <td><strong class="text-primary">{{ r.roll_number }}</strong></td>
+                        <td class="fw-semibold">{{ r.student_name }}</td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <input type="radio" class="btn-check" name="status_{{ r.attendance_id }}" id="p_{{ r.attendance_id }}" value="Present" {% if r.status == 'Present' %}checked{% endif %}>
+                                <label class="btn btn-outline-success" for="p_{{ r.attendance_id }}">Present</label>
+
+                                <input type="radio" class="btn-check" name="status_{{ r.attendance_id }}" id="l_{{ r.attendance_id }}" value="Late" {% if r.status == 'Late' %}checked{% endif %}>
+                                <label class="btn btn-outline-warning" for="l_{{ r.attendance_id }}">Late</label>
+
+                                <input type="radio" class="btn-check" name="status_{{ r.attendance_id }}" id="a_{{ r.attendance_id }}" value="Absent" {% if r.status == 'Absent' %}checked{% endif %}>
+                                <label class="btn btn-outline-danger" for="a_{{ r.attendance_id }}">Absent</label>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="text" name="remarks_{{ r.attendance_id }}" class="form-control form-control-sm" value="{{ r.remarks or '' }}" placeholder="e.g. Corrected by faculty">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-white py-3 text-end">
+            <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-secondary me-2">Cancel</a>
+            <button type="submit" class="btn btn-warning px-4 py-2 fw-semibold">
+                <i class="bi bi-save me-1"></i> Commit Updates (Trigger Audit)
+            </button>
+        </div>
+    </div>
+</form>
+{% elif selected_class_id %}
+<div class="card p-5 text-center text-muted">
+    <i class="bi bi-calendar-x display-4 mb-2"></i>
+    <h5>No attendance records found for this date.</h5>
+    <p>Please use "Mark Attendance" first if you haven't taken attendance for {{ selected_date }}.</p>
+    <div>
+        <a href="{{ url_for('teacher.mark_attendance', class_id=selected_class_id, subject_id=selected_subject_id, date=selected_date) }}" class="btn btn-primary">
+            <i class="bi bi-check2-circle me-1"></i> Mark Attendance Now
+        </a>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function splitCombo(val) {
+    if (val) {
+        const parts = val.split('_');
+        document.getElementById('hidden_class_id').value = parts[0];
+        document.getElementById('hidden_subject_id').value = parts[1];
+    }
+}
+</script>
+{% endblock %}

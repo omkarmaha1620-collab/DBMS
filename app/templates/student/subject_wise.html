@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Subject-wise Attendance Analysis{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">Subject-wise Attendance Performance</h3>
+        <p class="text-muted mb-0">Calculated via MySQL Stored Procedure <code>sp_get_student_attendance_summary</code></p>
+    </div>
+    <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-1"></i> Back to Dashboard</a>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-table text-primary me-2"></i> Attendance Summary by Subject</h5>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Subject Name</th>
+                    <th class="text-center">Total Sessions</th>
+                    <th class="text-center">Attended (P+L)</th>
+                    <th class="text-center">Missed (A)</th>
+                    <th class="text-center">Percentage</th>
+                    <th class="text-center">Cutoff Requirement</th>
+                    <th class="text-center">Eligibility Status</th>
+                    <th class="text-center">Deficit Shortage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in subjects %}
+                {% set pct = s.attendance_percentage|float %}
+                <tr>
+                    <td><strong class="text-primary font-monospace">{{ s.subject_code }}</strong></td>
+                    <td class="fw-semibold">{{ s.subject_name }}</td>
+                    <td class="text-center">{{ s.total_classes }}</td>
+                    <td class="text-center text-success fw-bold">{{ s.attended_classes }}</td>
+                    <td class="text-center text-danger fw-bold">{{ s.absent_classes }}</td>
+                    <td class="text-center">
+                        <span class="fs-6 fw-bold {% if pct >= min_pct %}text-success{% else %}text-danger{% endif %}">
+                            {{ s.attendance_percentage }}%
+                        </span>
+                    </td>
+                    <td class="text-center text-muted">&ge; {{ min_pct }}%</td>
+                    <td class="text-center">
+                        {% if pct >= min_pct %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1">
+                            <i class="bi bi-check2-circle"></i> Eligible
+                        </span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1">
+                            <i class="bi bi-exclamation-octagon"></i> Shortage
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if pct < min_pct and s.total_classes > 0 %}
+                        <span class="badge bg-danger px-2 py-1">
+                            Need +{{ s.lectures_needed_to_meet_cutoff }} classes
+                        </span>
+                        {% else %}
+                        <span class="text-muted small">None (Safe)</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">No subject records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card p-4 bg-light border-0 shadow-sm">
+    <h6 class="fw-bold text-dark"><i class="bi bi-calculator-fill text-primary me-2"></i> Attendance Calculation Logic &amp; Recovery Formula</h6>
+    <p class="small text-muted mb-1">
+        - <strong>Attendance Percentage:</strong> <code>(Attended Classes / Total Classes Held) &times; 100</code>
+    </p>
+    <p class="small text-muted mb-0">
+        - <strong>Shortage Recovery Formula:</strong> If percentage is below {{ min_pct }}%, the number of future consecutive lectures needed without absence ($x$) is calculated as:
+        <code>x = &lceil; ({{ min_pct / 100 }} &times; Total - Attended) / (1 - {{ min_pct / 100 }}) &rceil;</code>
+    </p>
+</div>
+{% endblock %}

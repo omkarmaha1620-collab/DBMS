@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% block title %}Manage Faculty / Teachers{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">Manage Faculty &amp; Instructors</h3>
+        <p class="text-muted mb-0">Faculty directory, academic departments, and qualifications</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTeacherModal">
+        <i class="bi bi-person-plus-fill me-1"></i> Add New Faculty
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-person-video3 text-primary me-2"></i> Faculty Directory ({{ teachers|length }} instructors)</h5>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Emp. Code</th>
+                    <th>Faculty Name</th>
+                    <th>Department</th>
+                    <th>Qualification</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>Courses Taught</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in teachers %}
+                <tr>
+                    <td><strong class="text-primary">{{ t.employee_code }}</strong></td>
+                    <td>
+                        <div class="fw-semibold">{{ t.full_name }}</div>
+                        <small class="text-muted">@{{ t.username }}</small>
+                    </td>
+                    <td><span class="badge bg-light text-dark border">{{ t.department }}</span></td>
+                    <td>{{ t.qualification or '—' }}</td>
+                    <td>{{ t.phone or '—' }}</td>
+                    <td><small>{{ t.email }}</small></td>
+                    <td>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">
+                            {{ t.assignment_count }} courses
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <button type="button" class="btn btn-sm btn-outline-primary me-1" 
+                                title="Edit Faculty"
+                                onclick="openEditTeacherModal({{ t.teacher_id }})">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                onclick="confirmDeleteTeacher({{ t.teacher_id }}, '{{ t.employee_code }}', '{{ t.full_name }}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-muted">No faculty members found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- ADD TEACHER MODAL -->
+<div class="modal fade" id="addTeacherModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.add_teacher') }}">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2 text-primary"></i> Add Faculty Member</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Full Name *</label>
+                            <input type="text" name="full_name" class="form-control" required placeholder="e.g. Prof. Alan Turing">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Username *</label>
+                            <input type="text" name="username" class="form-control" required placeholder="e.g. turing">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email Address *</label>
+                            <input type="email" name="email" class="form-control" required placeholder="turing@college.edu">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Default Password</label>
+                            <input type="password" name="password" class="form-control" value="Teacher@123">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Employee Code *</label>
+                            <input type="text" name="employee_code" class="form-control" required placeholder="e.g. TCH105">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Department *</label>
+                            <input type="text" name="department" class="form-control" required placeholder="e.g. Computer Science & Engineering">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Contact Phone</label>
+                            <input type="text" name="phone" class="form-control" placeholder="10-digit number">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Academic Qualification</label>
+                            <input type="text" name="qualification" class="form-control" placeholder="e.g. Ph.D. in Computer Science">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> Create Faculty Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT TEACHER MODAL -->
+<div class="modal fade" id="editTeacherModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="editTeacherForm" method="POST" action="">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2 text-primary"></i> Edit Faculty Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Full Name *</label>
+                            <input type="text" id="edit_t_full_name" name="full_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Username *</label>
+                            <input type="text" id="edit_t_username" name="username" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Email Address *</label>
+                            <input type="email" id="edit_t_email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Employee Code *</label>
+                            <input type="text" id="edit_t_code" name="employee_code" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Department *</label>
+                            <input type="text" id="edit_t_dept" name="department" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Contact Phone</label>
+                            <input type="text" id="edit_t_phone" name="phone" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Qualification</label>
+                            <input type="text" id="edit_t_qual" name="qualification" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-semibold">Account Status</label>
+                            <select id="edit_t_is_active" name="is_active" class="form-select">
+                                <option value="1">Active</option>
+                                <option value="0">Suspended</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label fw-semibold">Reset Password (Optional)</label>
+                            <input type="password" name="new_password" class="form-control" placeholder="Leave blank to retain password">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Update Faculty</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE TEACHER MODAL -->
+<div class="modal fade" id="deleteTeacherModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="deleteTeacherForm" method="POST" action="">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-triangle-fill me-2"></i> Delete Faculty</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="mb-0">Are you sure you want to delete teacher <strong id="delete_t_name"></strong> (<span id="delete_t_code"></span>)?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger"><i class="bi bi-trash me-1"></i> Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const teachersMap = {
+    {% for t in teachers %}
+    "{{ t.teacher_id }}": {{ t|tojson }},
+    {% endfor %}
+};
+
+function openEditTeacherModal(teacherOrId) {
+    const teacher = (typeof teacherOrId === 'object' && teacherOrId !== null)
+        ? teacherOrId
+        : teachersMap[teacherOrId];
+
+    if (!teacher) {
+        console.error("Teacher record not found for id:", teacherOrId);
+        return;
+    }
+
+    document.getElementById('editTeacherForm').action = '/admin/teachers/edit/' + teacher.teacher_id;
+    document.getElementById('edit_t_full_name').value = teacher.full_name || '';
+    document.getElementById('edit_t_username').value = teacher.username || '';
+    document.getElementById('edit_t_email').value = teacher.email || '';
+    document.getElementById('edit_t_code').value = teacher.employee_code || '';
+    document.getElementById('edit_t_dept').value = teacher.department || '';
+    document.getElementById('edit_t_phone').value = teacher.phone || '';
+    document.getElementById('edit_t_qual').value = teacher.qualification || '';
+    document.getElementById('edit_t_is_active').value = teacher.is_active ? "1" : "0";
+
+    const modalEl = document.getElementById('editTeacherModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+}
+
+function confirmDeleteTeacher(teacherId, empCode, fullName) {
+    document.getElementById('deleteTeacherForm').action = '/admin/teachers/delete/' + teacherId;
+    document.getElementById('delete_t_name').innerText = fullName;
+    document.getElementById('delete_t_code').innerText = empCode;
+    const modalEl = document.getElementById('deleteTeacherModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+}
+</script>
+{% endblock %}

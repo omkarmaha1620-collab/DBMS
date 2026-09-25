@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Attendance History Logs{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">Attendance Session Logs</h3>
+        <p class="text-muted mb-0">Complete historical register of lectures conducted by you</p>
+    </div>
+    <a href="{{ url_for('teacher.mark_attendance') }}" class="btn btn-primary"><i class="bi bi-calendar-check me-1"></i> Mark New Attendance</a>
+</div>
+
+<!-- Filter Bar -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('teacher.history') }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Class</label>
+                <select name="class_id" class="form-select">
+                    <option value="">-- All Classes --</option>
+                    {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class == c.id|string %}selected{% endif %}>{{ c.class_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Subject</label>
+                <select name="subject_id" class="form-select">
+                    <option value="">-- All Subjects --</option>
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}" {% if selected_subject == s.id|string %}selected{% endif %}>{{ s.subject_code }} - {{ s.subject_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">From Date</label>
+                <input type="date" name="start_date" class="form-control" value="{{ start_date or '' }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">To Date</label>
+                <input type="date" name="end_date" class="form-control" value="{{ end_date or '' }}">
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-dark w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{{ url_for('teacher.history') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- History Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history text-primary me-2"></i> Attendance Sessions ({{ history|length }} records)</h5>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Class</th>
+                    <th>Course Code &amp; Title</th>
+                    <th class="text-center">Enrolled</th>
+                    <th class="text-center">Present</th>
+                    <th class="text-center">Absent</th>
+                    <th class="text-center">Late</th>
+                    <th class="text-center">Turnout Rate</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in history %}
+                <tr>
+                    <td><strong class="text-dark">{{ h.attendance_date }}</strong></td>
+                    <td><span class="badge bg-light text-dark border">{{ h.class_label }}</span></td>
+                    <td>
+                        <span class="font-monospace text-primary fw-semibold">{{ h.subject_code }}</span>
+                        <div class="small text-muted">{{ h.subject_name }}</div>
+                    </td>
+                    <td class="text-center">{{ h.total_students }}</td>
+                    <td class="text-center text-success fw-bold">{{ h.present_count }}</td>
+                    <td class="text-center text-danger fw-bold">{{ h.absent_count }}</td>
+                    <td class="text-center text-warning fw-bold">{{ h.late_count }}</td>
+                    <td class="text-center">
+                        <span class="badge {% if h.attendance_rate >= min_attendance_pct %}bg-success{% else %}bg-danger{% endif %} px-2 py-1">
+                            {{ h.attendance_rate }}%
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ url_for('teacher.edit_attendance', class_id=h.class_id, subject_id=h.subject_id, date=h.attendance_date) }}" class="btn btn-sm btn-outline-warning" title="Edit Session">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{{ url_for('reports.daily', class_id=h.class_id, subject_id=h.subject_id, date=h.attendance_date) }}" class="btn btn-sm btn-outline-primary" title="View Daily Register">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-4 text-muted">No attendance logs matching your filters.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

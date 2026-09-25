@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}System Notifications{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-bell-fill text-warning me-2"></i> Notifications</h5>
+                <span class="badge bg-secondary">{{ notifications|length }} Total</span>
+            </div>
+            <div class="card-body p-0">
+                {% if notifications %}
+                <ul class="list-group list-group-flush">
+                    {% for n in notifications %}
+                    <li class="list-group-item p-3 border-bottom">
+                        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                            <h6 class="mb-1 fw-bold text-{{ n.type }}"><i class="bi bi-info-circle-fill me-1"></i> {{ n.title }}</h6>
+                            <small class="text-muted">{{ n.created_at }}</small>
+                        </div>
+                        <p class="mb-1 text-secondary">{{ n.message }}</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-bell-slash display-4"></i>
+                    <p class="mt-2 mb-0">You have no notifications at this time.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

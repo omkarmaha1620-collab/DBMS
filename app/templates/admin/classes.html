@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Manage Classes & Sections{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">Manage Classes &amp; Sections</h3>
+        <p class="text-muted mb-0">Academic programs, sections, and student enrollment capacity</p>
+    </div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addClassModal">
+        <i class="bi bi-plus-circle me-1"></i> Add New Class
+    </button>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-building text-primary me-2"></i> Active Classes ({{ classes|length }})</h5>
+            </div>
+            <div class="card-body p-0 table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Program / Class</th>
+                            <th>Section</th>
+                            <th>Semester</th>
+                            <th>Academic Year</th>
+                            <th class="text-center">Enrolled Students</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in classes %}
+                        <tr>
+                            <td><strong class="text-primary">{{ c.class_name }}</strong></td>
+                            <td><span class="badge bg-light text-dark border px-3">Sec {{ c.section }}</span></td>
+                            <td>Semester {{ c.semester }}</td>
+                            <td>{{ c.academic_year }}</td>
+                            <td class="text-center">
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">
+                                    {{ c.student_count }} Students
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <form method="POST" action="{{ url_for('admin.classes') }}" onsubmit="return confirm('Delete this class? This is restricted if students are enrolled.');" class="d-inline">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="class_id" value="{{ c.id }}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" {% if c.student_count > 0 %}title="Cannot delete class with active students"{% endif %}>
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No classes configured.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Add Form -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-plus-square me-2 text-primary"></i> Quick Add Class</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin.classes') }}">
+                    <input type="hidden" name="action" value="add">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Class / Program Name *</label>
+                        <input type="text" name="class_name" class="form-control" required placeholder="e.g. B.Tech CSE">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Section *</label>
+                        <input type="text" name="section" class="form-control" required placeholder="e.g. A, B, C">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Semester *</label>
+                        <select name="semester" class="form-select" required>
+                            {% for sem in range(1, 9) %}
+                            <option value="{{ sem }}" {% if sem == 5 %}selected{% endif %}>Semester {{ sem }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Academic Year *</label>
+                        <input type="text" name="academic_year" class="form-control" value="2025-2026" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-circle me-1"></i> Create Class</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADD CLASS MODAL (Optional duplicate for mobile) -->
+<div class="modal fade" id="addClassModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.classes') }}">
+                <input type="hidden" name="action" value="add">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Create New Class</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Class / Program Name *</label>
+                        <input type="text" name="class_name" class="form-control" required placeholder="e.g. B.Tech CSE">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Section *</label>
+                        <input type="text" name="section" class="form-control" required placeholder="e.g. A">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Semester *</label>
+                        <select name="semester" class="form-select" required>
+                            {% for sem in range(1, 9) %}
+                            <option value="{{ sem }}" {% if sem == 5 %}selected{% endif %}>Semester {{ sem }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Academic Year *</label>
+                        <input type="text" name="academic_year" class="form-control" value="2025-2026" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Class</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

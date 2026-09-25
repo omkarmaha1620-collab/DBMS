@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Internal Server Error (500){% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-6 text-center">
+        <div class="card p-5 shadow">
+            <div class="text-danger mb-3">
+                <i class="bi bi-exclamation-octagon-fill display-1"></i>
+            </div>
+            <h2 class="fw-bold">500 - Database / Server Error</h2>
+            <p class="text-muted mt-2">
+                An unexpected error occurred during database query execution or server processing. Any pending transactions have been safely rolled back.
+            </p>
+            <div class="mt-4">
+                <a href="{{ url_for('index') }}" class="btn btn-primary"><i class="bi bi-house-door me-1"></i> Return to Home</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

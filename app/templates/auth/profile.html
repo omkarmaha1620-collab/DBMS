@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card p-4 text-center">
+            <div class="mb-3">
+                <i class="bi bi-person-circle display-3 text-primary"></i>
+            </div>
+            <h4 class="fw-bold mb-1">{{ user.full_name }}</h4>
+            <p class="text-muted mb-2">@{{ user.username }}</p>
+            <div>
+                <span class="badge bg-primary text-uppercase px-3 py-2">{{ user.role }}</span>
+            </div>
+
+            <hr class="my-4">
+
+            <div class="text-start small">
+                <p class="mb-2"><strong>Email:</strong> {{ user.email }}</p>
+                {% if role_info and session.get('role') == 'teacher' %}
+                <p class="mb-2"><strong>Employee Code:</strong> {{ role_info.employee_code }}</p>
+                <p class="mb-2"><strong>Department:</strong> {{ role_info.department }}</p>
+                <p class="mb-2"><strong>Qualification:</strong> {{ role_info.qualification or 'N/A' }}</p>
+                <p class="mb-2"><strong>Phone:</strong> {{ role_info.phone or 'N/A' }}</p>
+                {% elif role_info and session.get('role') == 'student' %}
+                <p class="mb-2"><strong>Roll Number:</strong> {{ role_info.roll_number }}</p>
+                <p class="mb-2"><strong>Class:</strong> {{ role_info.class_name }} ({{ role_info.section }})</p>
+                <p class="mb-2"><strong>Semester:</strong> {{ role_info.semester }}</p>
+                <p class="mb-2"><strong>Academic Year:</strong> {{ role_info.academic_year }}</p>
+                <p class="mb-2"><strong>Phone:</strong> {{ role_info.phone or 'N/A' }}</p>
+                {% endif %}
+                <p class="mb-0 text-muted"><strong>Account Created:</strong> {{ user.created_at }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- Update Contact Details Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-person-lines-fill me-2 text-primary"></i> Contact Information</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('auth.profile') }}">
+                    <input type="hidden" name="action" value="update_profile">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Email Address</label>
+                        <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                    </div>
+                    {% if session.get('role') in ['teacher', 'student'] %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Phone Number</label>
+                        <input type="text" name="phone" class="form-control" value="{{ (role_info.phone if role_info else '') or '' }}">
+                    </div>
+                    {% endif %}
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i> Update Contact Info</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Change Password Card -->
+        <div class="card">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-key-fill me-2 text-warning"></i> Change Password</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('auth.profile') }}">
+                    <input type="hidden" name="action" value="change_password">
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Current Password</label>
+                        <input type="password" name="current_password" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">New Password</label>
+                        <input type="password" name="new_password" class="form-control" minlength="6" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Confirm New Password</label>
+                        <input type="password" name="confirm_password" class="form-control" minlength="6" required>
+                    </div>
+                    <button type="submit" class="btn btn-warning"><i class="bi bi-shield-lock me-1"></i> Change Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

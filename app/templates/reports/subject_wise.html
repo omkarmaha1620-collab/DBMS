@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Subject-wise Course Report{% endblock %}
+
+{% block content %}
+<div class="print-header d-none">
+    <h2>{{ institution_name }}</h2>
+    <p class="text-uppercase fw-bold mb-1">Subject-wise Attendance Performance Report</p>
+    {% if class_info and subject_info %}
+    <p class="mb-0">
+        <strong>Class:</strong> {{ class_info.class_label }} &nbsp;|&nbsp;
+        <strong>Subject:</strong> {{ subject_info.subject_name }} ({{ subject_info.subject_code }})
+    </p>
+    {% endif %}
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 no-print">
+    <div>
+        <h3 class="fw-bold mb-0">Subject-wise Attendance Summary</h3>
+        <p class="text-muted mb-0">Aggregate performance, attended lectures, percentages, and exam eligibility</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if records %}
+        <button type="button" class="btn btn-outline-dark" onclick="window.print()">
+            <i class="bi bi-printer-fill me-1"></i> Print Report
+        </button>
+        {% endif %}
+        <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Reports Hub
+        </a>
+    </div>
+</div>
+
+<!-- Filter Selection (no-print) -->
+<div class="card mb-4 shadow-sm no-print">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('reports.subject_wise') }}" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">Class &amp; Section *</label>
+                <select name="class_id" class="form-select" required>
+                    <option value="">Choose Class...</option>
+                    {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class == c.id %}selected{% endif %}>{{ c.class_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label fw-semibold">Subject *</label>
+                <select name="subject_id" class="form-select" required>
+                    <option value="">Choose Subject...</option>
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}" {% if selected_subject == s.id %}selected{% endif %}>{{ s.subject_code }} - {{ s.subject_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-info w-100 fw-semibold text-white"><i class="bi bi-file-earmark-bar-graph me-1"></i> Generate</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if records %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-table text-primary me-2"></i> Attendance Roster ({{ records|length }} Students)</h5>
+        <span class="badge bg-light text-dark border">Cutoff: &ge; {{ min_pct }}%</span>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Roll Number</th>
+                    <th>Student Full Name</th>
+                    <th class="text-center">Classes Held</th>
+                    <th class="text-center">Attended (P+L)</th>
+                    <th class="text-center">Missed (A)</th>
+                    <th class="text-center">Attendance %</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Recovery Deficit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                {% set pct = r.attendance_percentage|float %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong class="font-monospace text-primary">{{ r.roll_number }}</strong></td>
+                    <td class="fw-semibold">{{ r.full_name }}</td>
+                    <td class="text-center">{{ r.total_classes }}</td>
+                    <td class="text-center text-success fw-bold">{{ r.attended_classes }}</td>
+                    <td class="text-center text-danger fw-bold">{{ r.absent_classes }}</td>
+                    <td class="text-center">
+                        <span class="fw-bold fs-6 {% if pct >= min_pct %}text-success{% else %}text-danger{% endif %}">
+                            {{ r.attendance_percentage }}%
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        {% if pct >= min_pct %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                            <i class="bi bi-check2"></i> Eligible
+                        </span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+                            <i class="bi bi-exclamation-triangle"></i> Shortage
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if r.is_low %}
+                        <span class="badge bg-danger">Need +{{ r.shortage }}</span>
+                        {% else %}
+                        <span class="text-muted small">0</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="print-signatures d-none">
+    <div class="sig-box">Course Instructor</div>
+    <div class="sig-box">Class Coordinator</div>
+    <div class="sig-box">Head of Department</div>
+</div>
+{% elif selected_class %}
+<div class="card p-5 text-center text-muted">
+    <i class="bi bi-journal-x display-4 mb-2"></i>
+    <h5>No attendance data found for this subject and class.</h5>
+</div>
+{% endif %}
+{% endblock %}

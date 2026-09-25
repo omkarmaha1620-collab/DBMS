@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<!-- Student Profile Card Header -->
+<div class="card mb-4 shadow-sm border-0 bg-white">
+    <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; font-size: 1.8rem;">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold mb-1">{{ student.full_name }}</h3>
+                    <div class="text-muted small">
+                        <span class="me-3"><strong>Roll Number:</strong> <span class="text-primary font-monospace">{{ student.roll_number }}</span></span>
+                        <span class="me-3"><strong>Class:</strong> {{ student.class_name }} ({{ student.section }})</span>
+                        <span class="me-3"><strong>Semester:</strong> {{ student.semester }}</span>
+                        <span><strong>Academic Year:</strong> {{ student.academic_year }}</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                {% if is_overall_low %}
+                <span class="badge bg-danger fs-6 px-3 py-2"><i class="bi bi-exclamation-octagon-fill me-1"></i> Defaulter / Shortage Alert</span>
+                {% else %}
+                <span class="badge bg-success fs-6 px-3 py-2"><i class="bi bi-check-circle-fill me-1"></i> Attendance Satisfactory</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Low Attendance Warning Alert Banner (If Applicable) -->
+{% if is_overall_low %}
+<div class="alert alert-danger shadow-sm border-danger d-flex align-items-start p-4 mb-4">
+    <i class="bi bi-exclamation-triangle-fill fs-2 me-3 mt-1 text-danger"></i>
+    <div>
+        <h5 class="fw-bold mb-1">ATTENDANCE SHORTAGE WARNING</h5>
+        <p class="mb-2">
+            Your current overall attendance is <strong>{{ stats.overall_percentage }}%</strong>, which is below the university mandatory minimum of <strong>{{ min_pct }}%</strong>.
+        </p>
+        <div class="p-3 bg-white rounded border border-danger-subtle text-dark">
+            <i class="bi bi-calculator me-1 text-primary"></i>
+            <strong>Recovery Requirement:</strong> You must attend at least <span class="badge bg-danger fs-6">{{ shortage_needed }} consecutive classes</span> without missing any session to regain examination eligibility.
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Metrics Row -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3 metric-card {% if stats.overall_percentage >= min_pct %}success{% else %}danger{% endif %} card-hover">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-label">Overall Attendance</div>
+                    <div class="metric-number {% if stats.overall_percentage >= min_pct %}text-success{% else %}text-danger{% endif %}">
+                        {{ stats.overall_percentage }}%
+                    </div>
+                </div>
+                <div class="fs-1 {% if stats.overall_percentage >= min_pct %}text-success{% else %}text-danger{% endif %} opacity-50">
+                    <i class="bi bi-pie-chart-fill"></i>
+                </div>
+            </div>
+            <div class="small text-muted mt-2">Required: &ge; {{ min_pct }}%</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3 metric-card info card-hover">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-label">Classes Held</div>
+                    <div class="metric-number text-primary">{{ stats.total_classes }}</div>
+                </div>
+                <div class="fs-1 text-primary opacity-50"><i class="bi bi-collection-play-fill"></i></div>
+            </div>
+            <div class="small text-muted mt-2">Total registered sessions</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3 metric-card success card-hover">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-label">Classes Attended</div>
+                    <div class="metric-number text-success">{{ stats.total_attended }}</div>
+                </div>
+                <div class="fs-1 text-success opacity-50"><i class="bi bi-check-circle-fill"></i></div>
+            </div>
+            <div class="small text-muted mt-2">Present: {{ stats.present_count }} | Late: {{ stats.late_count }}</div>
+        </div>
+    </div>
+
+    <div class="col-sm-6 col-xl-3">
+        <div class="card p-3 metric-card danger card-hover">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-label">Classes Absent</div>
+                    <div class="metric-number text-danger">{{ stats.absent_count }}</div>
+                </div>
+                <div class="fs-1 text-danger opacity-50"><i class="bi bi-x-circle-fill"></i></div>
+            </div>
+            <div class="small text-muted mt-2">Missed lectures</div>
+        </div>
+    </div>
+</div>
+
+<!-- Subject-Wise Breakdown Table -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart-steps text-primary me-2"></i> Course-wise Attendance Progress</h5>
+        <a href="{{ url_for('student.subject_wise') }}" class="btn btn-sm btn-outline-primary">Detailed Breakdown &rarr;</a>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Course Code</th>
+                    <th>Subject Title</th>
+                    <th class="text-center">Classes Held</th>
+                    <th class="text-center">Attended</th>
+                    <th class="text-center">Absent</th>
+                    <th style="width: 25%;">Progress</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in subject_attendance %}
+                <tr>
+                    <td><strong class="text-primary font-monospace">{{ sub.subject_code }}</strong></td>
+                    <td class="fw-semibold">{{ sub.subject_name }}</td>
+                    <td class="text-center">{{ sub.total_classes }}</td>
+                    <td class="text-center text-success fw-bold">{{ sub.attended_classes }}</td>
+                    <td class="text-center text-danger fw-bold">{{ sub.absent_classes }}</td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height: 10px;">
+                                <div class="progress-bar {% if sub.attendance_percentage >= min_pct %}bg-success{% else %}bg-danger{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ sub.attendance_percentage }}%;">
+                                </div>
+                            </div>
+                            <span class="small fw-bold">{{ sub.attendance_percentage }}%</span>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        {% if sub.is_low %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle" title="Short by {{ sub.needed_classes }} lectures">
+                            <i class="bi bi-exclamation-triangle-fill"></i> Short (Need +{{ sub.needed_classes }})
+                        </span>
+                        {% else %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                            <i class="bi bi-check-circle"></i> Eligible
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">No attendance marked for your enrolled subjects yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Recent Attendance Timeline -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-clock-history text-primary me-2"></i> Recent Attendance Records</h5>
+        <a href="{{ url_for('student.history') }}" class="btn btn-sm btn-outline-secondary">View Full History</a>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th class="text-center">Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rec in recent_records %}
+                <tr>
+                    <td><strong>{{ rec.attendance_date }}</strong></td>
+                    <td><span class="badge bg-light text-dark border">{{ rec.subject_code }}</span></td>
+                    <td>{{ rec.subject_name }}</td>
+                    <td class="text-center">
+                        {% if rec.status == 'Present' %}
+                        <span class="badge-present"><i class="bi bi-check-lg"></i> Present</span>
+                        {% elif rec.status == 'Late' %}
+                        <span class="badge-late"><i class="bi bi-clock"></i> Late</span>
+                        {% else %}
+                        <span class="badge-absent"><i class="bi bi-x-lg"></i> Absent</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ rec.remarks or '—' }}</small></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No attendance logs available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

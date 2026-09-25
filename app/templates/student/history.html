@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}My Attendance History{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0">My Attendance History Log</h3>
+        <p class="text-muted mb-0">Complete historical timeline of your attendance across all subjects</p>
+    </div>
+    <a href="{{ url_for('student.dashboard') }}" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-1"></i> Back to Dashboard</a>
+</div>
+
+<!-- Filter Bar -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('student.history') }}" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Subject</label>
+                <select name="subject_id" class="form-select">
+                    <option value="">-- All Subjects --</option>
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}" {% if selected_subject == s.id|string %}selected{% endif %}>{{ s.subject_code }} - {{ s.subject_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Attendance Status</label>
+                <select name="status" class="form-select">
+                    <option value="">-- All Statuses --</option>
+                    <option value="Present" {% if selected_status == 'Present' %}selected{% endif %}>Present</option>
+                    <option value="Late" {% if selected_status == 'Late' %}selected{% endif %}>Late</option>
+                    <option value="Absent" {% if selected_status == 'Absent' %}selected{% endif %}>Absent</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">From Date</label>
+                <input type="date" name="start_date" class="form-control" value="{{ start_date or '' }}">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">To Date</label>
+                <input type="date" name="end_date" class="form-control" value="{{ end_date or '' }}">
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-dark w-100"><i class="bi bi-funnel me-1"></i> Filter</button>
+                <a href="{{ url_for('student.history') }}" class="btn btn-outline-secondary" title="Reset"><i class="bi bi-arrow-counterclockwise"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Records Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-calendar3 text-primary me-2"></i> Attendance Timeline ({{ records|length }} entries)</h5>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Marked By Faculty</th>
+                    <th class="text-center">Status</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                <tr>
+                    <td><strong>{{ r.attendance_date }}</strong></td>
+                    <td><span class="badge bg-light text-dark font-monospace border">{{ r.subject_code }}</span></td>
+                    <td class="fw-semibold">{{ r.subject_name }}</td>
+                    <td>{{ r.teacher_name }}</td>
+                    <td class="text-center">
+                        {% if r.status == 'Present' %}
+                        <span class="badge-present"><i class="bi bi-check-lg"></i> Present</span>
+                        {% elif r.status == 'Late' %}
+                        <span class="badge-late"><i class="bi bi-clock"></i> Late</span>
+                        {% else %}
+                        <span class="badge-absent"><i class="bi bi-x-lg"></i> Absent</span>
+                        {% endif %}
+                    </td>
+                    <td><small class="text-muted">{{ r.remarks or '—' }}</small></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-muted">No attendance logs matching your criteria.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

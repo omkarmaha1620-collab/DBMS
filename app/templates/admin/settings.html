@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}System Settings{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h4 class="mb-0 fw-bold"><i class="bi bi-gear-wide-connected text-primary me-2"></i> System Configuration &amp; Policies</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('admin.settings') }}">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Institution / University Name</label>
+                        <input type="text" name="institution_name" class="form-control" value="{{ settings.get('institution_name', 'Apex Institute of Technology') }}" required>
+                        <small class="text-muted">Displayed across application headers and official print reports.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Active Academic Year</label>
+                        <input type="text" name="academic_year" class="form-control" value="{{ settings.get('academic_year', '2025-2026') }}" required>
+                        <small class="text-muted">Default session tag for classes and enrollments.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-danger">Minimum Required Attendance Percentage (%)</label>
+                        <div class="input-group">
+                            <input type="number" step="0.5" min="50" max="100" name="min_attendance_percentage" class="form-control" value="{{ settings.get('min_attendance_percentage', '75') }}" required>
+                            <span class="input-group-text bg-light fw-bold">%</span>
+                        </div>
+                        <div class="form-text text-muted">
+                            Students whose attendance falls below this threshold will automatically receive warning notifications and appear on the Defaulter Report (calculated via MySQL Views and Stored Procedures).
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 mb-4 border">
+                        <h6 class="fw-bold text-dark"><i class="bi bi-info-circle-fill text-primary me-1"></i> DBMS Implementation Details</h6>
+                        <p class="small text-muted mb-0">
+                            Updates made here are persisted directly into the <code>system_settings</code> relational table and dynamically queried by <code>view_low_attendance_students</code> and <code>sp_get_student_attendance_summary</code> without requiring application restarts.
+                        </p>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold">
+                        <i class="bi bi-save me-1"></i> Save Configuration Settings
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

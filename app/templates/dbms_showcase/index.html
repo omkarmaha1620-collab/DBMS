@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}DBMS Project Features Showcase{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+    <div>
+        <h3 class="fw-bold mb-0 text-primary"><i class="bi bi-database-check me-2"></i> DBMS Project Demonstration &amp; Evaluation Showcase</h3>
+        <p class="text-muted mb-0">Technical walkthrough of Relational Normalization, SQL Joins, Triggers, Views, Stored Procedures, and ACID Transactions</p>
+    </div>
+    <span class="badge bg-primary fs-6 px-3 py-2"><i class="bi bi-cpu me-1"></i> MySQL 8.x Engine</span>
+</div>
+
+<!-- 1. Database Tables & Live Row Counts -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-table text-primary me-2"></i> 1. Relational Tables in <code>attendance_db</code> (Live Row Counts)</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            {% for t in table_stats %}
+            <div class="col-sm-6 col-md-4 col-lg-3">
+                <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-bold font-monospace text-dark">{{ t.table_name }}</div>
+                        <small class="text-muted">InnoDB Table</small>
+                    </div>
+                    <span class="badge bg-primary rounded-pill fs-6">{{ t.row_count }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- 2. Database Triggers & Audit Trail (Demonstration of trg_attendance_audit_*) -->
+<div class="card shadow-sm mb-4 border-warning-subtle">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <div>
+            <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-lightning-charge-fill text-warning me-2"></i> 2. Database Triggers in Action (<code>attendance_audit</code> Table)</h5>
+            <small class="text-muted">Populated automatically via <code>trg_attendance_audit_insert</code> and <code>trg_attendance_audit_update</code></small>
+        </div>
+        <span class="badge bg-warning text-dark border">Trigger Audit Trail</span>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.88rem;">
+            <thead>
+                <tr class="table-light">
+                    <th>Audit ID</th>
+                    <th>Attendance ID</th>
+                    <th>Roll Number</th>
+                    <th>Student Name</th>
+                    <th>Action</th>
+                    <th>Old Status</th>
+                    <th>New Status</th>
+                    <th>Trigger Timestamp</th>
+                    <th>Audit Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in audit_logs %}
+                <tr>
+                    <td>{{ a.id }}</td>
+                    <td>#{{ a.attendance_id }}</td>
+                    <td><strong class="font-monospace text-primary">{{ a.roll_number or '—' }}</strong></td>
+                    <td>{{ a.student_name or '—' }}</td>
+                    <td>
+                        <span class="badge {% if a.action_type == 'INSERT' %}bg-success{% elif a.action_type == 'UPDATE' %}bg-warning text-dark{% else %}bg-danger{% endif %}">
+                            {{ a.action_type }}
+                        </span>
+                    </td>
+                    <td><span class="text-muted">{{ a.old_status or '—' }}</span></td>
+                    <td><strong>{{ a.new_status or '—' }}</strong></td>
+                    <td><small>{{ a.changed_at }}</small></td>
+                    <td><small class="text-muted">{{ a.notes }}</small></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-3 text-muted">No audit trigger records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 3. Database Views Demonstration -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-eye-fill text-info me-2"></i> 3. Database Views Demonstration (<code>view_low_attendance_students</code>)</h5>
+        <small class="text-muted">Calculates percentage and compares against <code>system_settings.min_attendance_percentage</code> in real-time</small>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.88rem;">
+            <thead>
+                <tr class="table-light">
+                    <th>Roll Number</th>
+                    <th>Student Name</th>
+                    <th>Class</th>
+                    <th>Subject</th>
+                    <th class="text-center">Total Held</th>
+                    <th class="text-center">Attended</th>
+                    <th class="text-center">Percentage</th>
+                    <th class="text-center">Cutoff Required</th>
+                    <th class="text-center">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in view_sample %}
+                <tr>
+                    <td><strong class="font-monospace text-danger">{{ v.roll_number }}</strong></td>
+                    <td class="fw-semibold">{{ v.student_name }}</td>
+                    <td>{{ v.class_display }}</td>
+                    <td>{{ v.subject_name }} ({{ v.subject_code }})</td>
+                    <td class="text-center">{{ v.total_classes }}</td>
+                    <td class="text-center text-success fw-bold">{{ v.attended_classes }}</td>
+                    <td class="text-center text-danger fw-bold">{{ v.attendance_percentage }}%</td>
+                    <td class="text-center">&ge; {{ v.required_percentage }}%</td>
+                    <td class="text-center">
+                        <span class="badge bg-danger">{{ v.eligibility_status }}</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-3 text-muted">No records in low attendance view.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 4. Stored Procedure Execution Demonstration -->
+{% if proc_sample %}
+<div class="card shadow-sm mb-4 border-primary-subtle">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold text-dark"><i class="bi bi-gear-wide-connected text-primary me-2"></i> 4. Stored Procedure Output (<code>sp_get_student_attendance_summary({{ sample_student_id }})</code>)</h5>
+        <small class="text-muted">Executed via <code>CALL sp_get_student_attendance_summary(?)</code> with deficit math</small>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover table-sm align-middle mb-0" style="font-size: 0.88rem;">
+            <thead>
+                <tr class="table-light">
+                    <th>Roll No</th>
+                    <th>Student</th>
+                    <th>Subject Code</th>
+                    <th>Subject Title</th>
+                    <th class="text-center">Sessions</th>
+                    <th class="text-center">Attended</th>
+                    <th class="text-center">Attendance %</th>
+                    <th class="text-center">Shortage Status</th>
+                    <th class="text-center">Lectures Needed to Recover</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in proc_sample %}
+                <tr>
+                    <td><strong class="font-monospace text-primary">{{ p.roll_number }}</strong></td>
+                    <td>{{ p.student_name }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ p.subject_code }}</span></td>
+                    <td>{{ p.subject_name }}</td>
+                    <td class="text-center">{{ p.total_classes }}</td>
+                    <td class="text-center text-success fw-bold">{{ p.attended_classes }}</td>
+                    <td class="text-center fw-bold">{{ p.attendance_percentage }}%</td>
+                    <td class="text-center">
+                        <span class="badge {% if p.status_badge == 'Satisfactory' %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ p.status_badge }}
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        {% if p.lectures_needed_to_meet_cutoff > 0 %}
+                        <span class="badge bg-danger">+{{ p.lectures_needed_to_meet_cutoff }} Lectures</span>
+                        {% else %}
+                        <span class="text-muted small">0 (Eligible)</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- 5. Technical DBMS Architecture & Normalization Guide -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-mortarboard-fill text-primary me-2"></i> 5. Relational Normalization &amp; DBMS Concepts Demonstrated</h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h6 class="fw-bold text-primary">A. Relational Normalization (3NF / BCNF)</h6>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li><strong>1NF:</strong> All attribute values are atomic (e.g. no arrays, multi-valued fields). Primary keys defined on all 10 tables.</li>
+                    <li><strong>2NF:</strong> No partial dependencies. Composite relationships decomposed into junction table <code>class_subject_teachers</code> and fact table <code>attendance</code>.</li>
+                    <li><strong>3NF:</strong> No transitive dependencies. Derived values (e.g. attendance percentage) are not stored redundantly in tables; computed dynamically via SQL Views and Stored Procedures.</li>
+                    <li><strong>Referential Integrity:</strong> <code>ON DELETE CASCADE</code> for 1:1 user-profile links and notifications; <code>ON DELETE RESTRICT</code> for classes to safeguard active enrollments.</li>
+                </ul>
+            </div>
+
+            <div class="col-md-6">
+                <h6 class="fw-bold text-primary">B. ACID Transactions &amp; SQL Operations</h6>
+                <ul class="small text-muted ps-3 mb-0">
+                    <li><strong>Transactions (Atomicity):</strong> Attendance marking commits all students in a classroom inside a single atomic unit. If any error occurs, <code>connection.rollback()</code> is triggered immediately.</li>
+                    <li><strong>Multi-Table Joins:</strong> Core queries employ 3 to 5-way <code>INNER JOIN</code> and <code>LEFT JOIN</code> linking students, classes, subjects, teachers, and users.</li>
+                    <li><strong>Aggregation &amp; HAVING:</strong> Defaulter calculation utilizes <code>SUM(CASE ...)</code>, <code>COUNT()</code>, <code>GROUP BY</code>, and <code>HAVING attendance_percentage &lt; threshold</code>.</li>
+                    <li><strong>Subqueries:</strong> Scalar subqueries retrieve dynamic cutoff thresholds from <code>system_settings</code>.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

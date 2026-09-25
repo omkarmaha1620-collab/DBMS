@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Overall Class Attendance Report{% endblock %}
+
+{% block content %}
+<div class="print-header d-none">
+    <h2>{{ institution_name }}</h2>
+    <p class="text-uppercase fw-bold mb-1">Overall Class Cumulative Attendance Register</p>
+    {% if class_info %}
+    <p class="mb-0">
+        <strong>Class:</strong> {{ class_info.class_label }} &nbsp;|&nbsp;
+        <strong>Academic Year:</strong> {{ class_info.academic_year }} &nbsp;|&nbsp;
+        <strong>Semester:</strong> {{ class_info.semester }}
+    </p>
+    {% endif %}
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2 no-print">
+    <div>
+        <h3 class="fw-bold mb-0">Overall Class Cumulative Report</h3>
+        <p class="text-muted mb-0">Combined multi-subject attendance aggregation per student</p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if records and selected_class %}
+        <a href="{{ url_for('reports.export_csv', type='overall', class_id=selected_class) }}" class="btn btn-outline-success">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Export CSV
+        </a>
+        <button type="button" class="btn btn-outline-dark" onclick="window.print()">
+            <i class="bi bi-printer-fill me-1"></i> Print Overall Sheet
+        </button>
+        {% endif %}
+        <a href="{{ url_for('reports.index') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Reports Hub
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4 shadow-sm no-print">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('reports.overall') }}" class="row g-3 align-items-end">
+            <div class="col-md-9">
+                <label class="form-label fw-semibold">Class &amp; Section *</label>
+                <select name="class_id" class="form-select" required>
+                    <option value="">Choose Class...</option>
+                    {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class == c.id %}selected{% endif %}>{{ c.class_label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-warning w-100 fw-semibold text-dark"><i class="bi bi-pie-chart-fill me-1"></i> Compute Aggregates</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% if records %}
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i> Cumulative Summary: {{ class_info.class_label }}</h5>
+        <span class="badge bg-light text-dark border">Total: {{ records|length }} Students</span>
+    </div>
+    <div class="card-body p-0 table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Roll Number</th>
+                    <th>Student Full Name</th>
+                    <th class="text-center">Total Sessions Held</th>
+                    <th class="text-center">Total Attended</th>
+                    <th class="text-center">Total Absent</th>
+                    <th class="text-center">Overall Attendance %</th>
+                    <th class="text-center">Eligibility Status</th>
+                    <th class="text-center">Deficit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                {% set pct = r.overall_percentage|float %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong class="font-monospace text-primary">{{ r.roll_number }}</strong></td>
+                    <td class="fw-semibold">{{ r.full_name }}</td>
+                    <td class="text-center">{{ r.total_sessions }}</td>
+                    <td class="text-center text-success fw-bold">{{ r.attended_sessions }}</td>
+                    <td class="text-center text-danger fw-bold">{{ r.absent_sessions }}</td>
+                    <td class="text-center">
+                        <span class="fs-6 fw-bold {% if pct >= min_pct %}text-success{% else %}text-danger{% endif %}">
+                            {{ r.overall_percentage }}%
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        {% if pct >= min_pct %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                            <i class="bi bi-check-circle"></i> Eligible
+                        </span>
+                        {% else %}
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">
+                            <i class="bi bi-exclamation-octagon"></i> Shortage
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if r.is_low %}
+                        <span class="badge bg-danger">Need +{{ r.shortage }}</span>
+                        {% else %}
+                        <span class="text-muted small">0</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="print-signatures d-none">
+    <div class="sig-box">Class Teacher / Advisor</div>
+    <div class="sig-box">Head of Department</div>
+    <div class="sig-box">Dean Academic Affairs</div>
+</div>
+{% elif selected_class %}
+<div class="card p-5 text-center text-muted">
+    <i class="bi bi-journal-x display-4 mb-2"></i>
+    <h5>No cumulative attendance data recorded for this class.</h5>
+</div>
+{% endif %}
+{% endblock %}
