@@ -102,8 +102,9 @@ def seed_database():
             """
             INSERT INTO users (username, password_hash, email, full_name, role, is_active)
             VALUES (%s, %s, %s, %s, 'admin', 1)
+            ON DUPLICATE KEY UPDATE full_name = VALUES(full_name), email = VALUES(email)
             """,
-            ("admin", admin_pass, "admin@apex.edu", "Dr. Rajeshwar Rao (Principal)")
+            ("admin", admin_pass, "admin@apex.edu", "Dr. Maruthi (Principal)")
         )
 
         print("Seeding Faculty (Teachers)...")

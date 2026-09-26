@@ -26,7 +26,7 @@
         <div class="container-fluid px-4">
             <a class="navbar-brand d-flex align-items-center" href="{{ url_for('index') }}">
                 <i class="bi bi-calendar-check-fill me-2 fs-4 text-warning"></i>
-                <span>AMS Portal</span>
+                <span>SWC Portal</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                 <span class="navbar-toggler-icon"></span>
@@ -116,7 +116,7 @@
                     <li class="nav-item dropdown me-2">
                         <a class="nav-link dropdown-toggle text-white d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
                             <i class="bi bi-person-circle fs-5 me-2"></i>
-                            <span>{{ session.get('full_name', 'User') }}</span>
+                            <span>{{ current_user_name or session.get('full_name', 'User') }}</span>
                             <span class="badge bg-light text-dark ms-2 text-uppercase" style="font-size: 0.7rem;">{{ session.get('role') }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end shadow">

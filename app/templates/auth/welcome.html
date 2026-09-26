@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}Welcome to SWC Portal{% endblock %}
+
+{% block extra_head %}
+<meta http-equiv="refresh" content="2.5;url={{ target_url }}">
+<style>
+    /* Hide top nav links during welcome animation for a focused, clean transition */
+    .navbar-nav {
+        display: none !important;
+    }
+    .navbar-toggler {
+        display: none !important;
+    }
+
+    /* Welcome Container & Card Animation */
+    .welcome-container {
+        min-height: 75vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+    }
+
+    .welcome-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        padding: 2.75rem 2.5rem;
+        max-width: 520px;
+        width: 100%;
+        text-align: center;
+        animation: welcomeCardEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes welcomeCardEntrance {
+        0% {
+            opacity: 0;
+            transform: translateY(24px) scale(0.97);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Icon Glow & Pulse */
+    .welcome-icon-box {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem auto;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(30, 58, 138, 0.1) 0%, rgba(15, 118, 110, 0.15) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: iconPulse 2s infinite ease-in-out;
+    }
+
+    @keyframes iconPulse {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(30, 58, 138, 0.2);
+        }
+        50% {
+            transform: scale(1.06);
+            box-shadow: 0 0 0 14px rgba(30, 58, 138, 0);
+        }
+    }
+
+    .welcome-icon {
+        font-size: 2.6rem;
+        color: #f59e0b; /* Golden Yellow matches SWC Portal logo */
+        animation: iconSpinIn 0.8s ease-out forwards;
+    }
+
+    @keyframes iconSpinIn {
+        0% {
+            opacity: 0;
+            transform: scale(0.5) rotate(-15deg);
+        }
+        100% {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+        }
+    }
+
+    /* Badge & Text Staggered Animations */
+    .welcome-badge {
+        display: inline-flex;
+        align-items: center;
+        font-size: 0.82rem;
+        font-weight: 600;
+        padding: 0.35rem 0.9rem;
+        border-radius: 50px;
+        background-color: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
+        margin-bottom: 1rem;
+        animation: welcomeFadeIn 0.6s ease-out 0.15s both;
+    }
+
+    .welcome-title {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: #1e293b;
+        letter-spacing: -0.5px;
+        margin-bottom: 0.5rem;
+        animation: welcomeFadeIn 0.6s ease-out 0.25s both;
+    }
+
+    .welcome-user {
+        font-size: 1.05rem;
+        color: #64748b;
+        margin-bottom: 0.75rem;
+        animation: welcomeFadeIn 0.6s ease-out 0.35s both;
+    }
+
+    .welcome-role-badge {
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        font-weight: 700;
+        padding: 0.4rem 0.85rem;
+        border-radius: 6px;
+        animation: welcomeFadeIn 0.6s ease-out 0.45s both;
+    }
+
+    @keyframes welcomeFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Animated Loading Bar */
+    .progress-track {
+        height: 6px;
+        background: #f1f5f9;
+        border-radius: 999px;
+        overflow: hidden;
+        margin: 1.75rem 0 0.75rem 0;
+        position: relative;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #1e3a8a 0%, #0f766e 100%);
+        border-radius: 999px;
+        transition: width 2.4s cubic-bezier(0.2, 0.8, 0.4, 1);
+    }
+
+    .redirect-hint {
+        font-size: 0.85rem;
+        color: #94a3b8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .manual-link {
+        font-size: 0.8rem;
+        color: #0284c7;
+        text-decoration: none;
+        margin-top: 1rem;
+        display: inline-block;
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+    .manual-link:hover {
+        opacity: 1;
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-container">
+    <div class="welcome-card">
+        <!-- SWC Portal Logo / Icon -->
+        <div class="welcome-icon-box">
+            <i class="bi bi-calendar-check-fill welcome-icon"></i>
+        </div>
+
+        <!-- Success Status Pill -->
+        <div>
+            <span class="welcome-badge">
+                <i class="bi bi-check-circle-fill me-1"></i> Login successful
+            </span>
+        </div>
+
+        <!-- Main Prominent Text -->
+        <h2 class="welcome-title">Welcome to SWC Portal</h2>
+
+        <!-- Personalized Greeting -->
+        <p class="welcome-user">
+            Welcome, <strong class="text-dark">{{ full_name }}</strong>
+        </p>
+
+        <!-- Role Badge -->
+        <div class="mb-3">
+            <span class="badge {% if role == 'admin' %}bg-primary{% elif role == 'teacher' %}bg-success{% else %}bg-info text-dark{% endif %} welcome-role-badge">
+                <i class="bi {% if role == 'admin' %}bi-shield-lock{% elif role == 'teacher' %}bi-person-badge{% else %}bi-mortarboard{% endif %} me-1"></i>
+                {{ role|upper }} ACCOUNT
+            </span>
+        </div>
+
+        <!-- Progress / Loading Animation -->
+        <div class="progress-track">
+            <div id="welcomeProgressBar" class="progress-bar-fill"></div>
+        </div>
+
+        <div class="redirect-hint">
+            <span><i class="bi bi-arrow-repeat me-1 spinner-border spinner-border-sm" style="width: 0.85rem; height: 0.85rem;"></i> Loading {{ target_name }}...</span>
+            <span id="countdownText">Redirecting...</span>
+        </div>
+
+        <a href="{{ target_url }}" class="manual-link">
+            Click here if you are not redirected automatically &rarr;
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Trigger the smooth progress bar fill
+    const progressBar = document.getElementById('welcomeProgressBar');
+    setTimeout(function() {
+        if (progressBar) {
+            progressBar.style.width = '100%';
+        }
+    }, 60);
+
+    // 2. Exactly 2.5-second redirect
+    const redirectUrl = "{{ target_url }}";
+    setTimeout(function() {
+        window.location.replace(redirectUrl);
+    }, 2500);
+});
+</script>
+{% endblock %}

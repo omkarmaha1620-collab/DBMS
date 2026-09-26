@@ -23,6 +23,13 @@ def create_app(config_class=Config):
             ctx['min_attendance_pct'] = min_pct
 
             if 'user_id' in session:
+                u_row = query_db("SELECT full_name, role, is_active FROM users WHERE id = %s", (session['user_id'],), one=True)
+                if u_row and u_row['is_active']:
+                    session['full_name'] = u_row['full_name']
+                    ctx['current_user_name'] = u_row['full_name']
+                elif u_row and not u_row['is_active']:
+                    session.clear()
+
                 unread = query_db(
                     "SELECT COUNT(*) AS cnt FROM notifications WHERE user_id = %s AND is_read = 0",
                     (session['user_id'],),
@@ -64,6 +71,25 @@ def create_app(config_class=Config):
             elif role == 'student':
                 return redirect(url_for('student.dashboard'))
         return redirect(url_for('auth.login'))
+
+    # Sync active session with live database state on every request
+    @app.before_request
+    def sync_user_session():
+        if 'user_id' in session:
+            try:
+                curr_user = query_db(
+                    "SELECT id, username, full_name, role, is_active FROM users WHERE id = %s",
+                    (session['user_id'],),
+                    one=True
+                )
+                if curr_user and curr_user['is_active']:
+                    session['full_name'] = curr_user['full_name']
+                    session['username'] = curr_user['username']
+                    session['role'] = curr_user['role']
+                elif curr_user and not curr_user['is_active']:
+                    session.clear()
+            except Exception:
+                pass
 
     # Prevent browser back-button/session caching of authenticated pages
     @app.after_request
