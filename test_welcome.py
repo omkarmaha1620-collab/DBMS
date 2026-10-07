@@ -15,7 +15,7 @@ class WelcomeAnimationTestCase(unittest.TestCase):
         self.assertIn('/login', resp.headers['Location'])
 
     def test_02_admin_login_welcome_screen_content_and_timing(self):
-        """Admin login welcome screen displays SWC Portal, Dr. Maruthi, ADMIN badge, and 2.5s delay."""
+        """Admin login welcome screen displays SWC Portal, Dr. Marappa B, ADMIN badge, and 2.5s delay."""
         # 1. Login as admin
         login_resp = self.client.post('/login', data={'username': 'admin', 'password': 'Admin@123'})
         self.assertEqual(login_resp.status_code, 302)
@@ -28,7 +28,7 @@ class WelcomeAnimationTestCase(unittest.TestCase):
         # Assert branding & text requirements
         self.assertIn('Welcome to SWC Portal', html)
         self.assertIn('Login successful', html)
-        self.assertIn('Dr. Maruthi (Principal)', html)
+        self.assertIn('Dr. Marappa B (Principal)', html)
         self.assertIn('ADMIN ACCOUNT', html)
         self.assertNotIn('AMS Portal', html)
         self.assertNotIn('Attendance Portal', html)
