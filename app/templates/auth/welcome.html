@@ -196,6 +196,7 @@
 
         <!-- Main Prominent Text -->
         <h2 class="welcome-title">Welcome to SWC Portal</h2>
+        <div class="text-muted small fw-medium mb-2">{{ institution_name }}</div>
 
         <!-- Personalized Greeting -->
         <p class="welcome-user">
@@ -225,6 +226,10 @@
         </a>
     </div>
 </div>
+{% endblock %}
+
+{% block footer %}
+{# Clean transition without footer #}
 {% endblock %}
 
 {% block extra_scripts %}

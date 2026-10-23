@@ -88,7 +88,7 @@ def seed_database():
         settings = [
             ('min_attendance_percentage', '75', 'Minimum required attendance percentage for exam eligibility'),
             ('academic_year', '2025-2026', 'Current active academic year'),
-            ('institution_name', 'Apex Institute of Engineering & Technology', 'College / University Name'),
+            ('institution_name', 'Sree Siddaganga College of Arts, Science and Commerce for Women', 'College / University Name'),
             ('department_name', 'Department of Computer Science & Engineering', 'Primary Department')
         ]
         cursor.executemany(

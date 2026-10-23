@@ -1,67 +1,298 @@
 {% extends "base.html" %}
 {% block title %}Sign In{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* ==========================================================
+       SWC Portal - Professional Academic Login Page
+       ========================================================== */
+
+    .login-wrapper {
+        min-height: calc(82vh - 60px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+    }
+
+    .login-card {
+        width: 100%;
+        max-width: 460px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .login-card:hover {
+        box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.12), 0 10px 15px -5px rgba(15, 23, 42, 0.06);
+    }
+
+    /* Academic Portal Card Header */
+    .login-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #0f766e 100%);
+        color: #ffffff;
+        padding: 2.25rem 2rem 1.75rem 2rem;
+        text-align: center;
+        position: relative;
+    }
+
+    .portal-icon-badge {
+        width: 62px;
+        height: 62px;
+        margin: 0 auto 1.15rem auto;
+        background: rgba(255, 255, 255, 0.14);
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255, 255, 255, 0.28);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .portal-icon-badge i {
+        font-size: 2rem;
+        color: #f59e0b; /* Golden Yellow accent matching SWC Portal logo */
+    }
+
+    .portal-title {
+        font-size: 1.65rem;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+        margin-bottom: 0.35rem;
+        color: #ffffff;
+    }
+
+    .college-name {
+        font-size: 0.88rem;
+        font-weight: 500;
+        line-height: 1.45;
+        color: rgba(255, 255, 255, 0.94);
+        max-width: 380px;
+        margin: 0 auto;
+        word-wrap: break-word;
+    }
+
+    .system-tag {
+        display: inline-block;
+        margin-top: 0.85rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.75px;
+        text-transform: uppercase;
+        background-color: rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        padding: 0.25rem 0.8rem;
+        border-radius: 50px;
+    }
+
+    /* Form Body */
+    .login-body {
+        padding: 2.25rem 2rem 2rem 2rem;
+    }
+
+    .form-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: #334155;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+    }
+
+    .input-group-text {
+        background-color: #f8fafc;
+        border-color: #cbd5e1;
+        color: #64748b;
+        font-size: 1.05rem;
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+    }
+
+    .login-body .form-control {
+        border-color: #cbd5e1;
+        padding: 0.65rem 0.9rem;
+        font-size: 0.95rem;
+        color: #1e293b;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .login-body .form-control:focus {
+        border-color: #1e3a8a;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+    }
+
+    .btn-toggle-password {
+        background-color: #f8fafc;
+        border: 1px solid #cbd5e1;
+        border-left: none;
+        color: #64748b;
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
+        transition: color 0.15s ease, background-color 0.15s ease;
+    }
+
+    .btn-toggle-password:hover,
+    .btn-toggle-password:focus {
+        background-color: #f1f5f9;
+        color: #1e293b;
+    }
+
+    .login-submit-btn {
+        background: linear-gradient(135deg, #1e3a8a 0%, #0f766e 100%);
+        border: none;
+        padding: 0.72rem 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        border-radius: 8px;
+        color: #ffffff;
+        box-shadow: 0 4px 6px -1px rgba(30, 58, 138, 0.2), 0 2px 4px -2px rgba(30, 58, 138, 0.1);
+        transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+
+    .login-submit-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 12px -2px rgba(30, 58, 138, 0.28), 0 3px 6px -2px rgba(30, 58, 138, 0.14);
+        color: #ffffff;
+        opacity: 0.96;
+    }
+
+    .login-submit-btn:active {
+        transform: translateY(0);
+    }
+
+    .login-security-notice {
+        font-size: 0.78rem;
+        color: #64748b;
+        text-align: center;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f1f5f9;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 576px) {
+        .login-wrapper {
+            padding: 1.25rem 0.75rem;
+            min-height: calc(85vh - 50px);
+        }
+        .login-card {
+            border-radius: 12px;
+        }
+        .login-header {
+            padding: 1.75rem 1.25rem 1.5rem 1.25rem;
+        }
+        .portal-title {
+            font-size: 1.45rem;
+        }
+        .college-name {
+            font-size: 0.82rem;
+            line-height: 1.4;
+        }
+        .login-body {
+            padding: 1.75rem 1.25rem 1.5rem 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
-    <div class="col-md-5 col-lg-4">
-        <div class="card shadow-lg border-0 rounded-4">
-            <div class="card-header bg-primary text-white text-center py-4 rounded-top-4" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f766e 100%) !important;">
-                <i class="bi bi-shield-check display-5"></i>
-                <h4 class="fw-bold mt-2 mb-0">SWC Portal</h4>
-                <p class="small text-light opacity-75 mb-0">Apex Institute of Engineering & Technology</p>
+<div class="login-wrapper">
+    <div class="login-card">
+        <!-- Portal Header -->
+        <div class="login-header">
+            <div class="portal-icon-badge">
+                <i class="bi bi-shield-check"></i>
             </div>
-            <div class="card-body p-4">
-                <form method="POST" action="{{ url_for('auth.login') }}">
-                    <div class="mb-3">
-                        <label for="username" class="form-label fw-semibold">Username</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-person"></i></span>
-                            <input type="text" class="form-control" id="username" name="username" placeholder="e.g. admin, turing, student01" required autofocus>
-                        </div>
+            <h1 class="portal-title">SWC Portal</h1>
+            <p class="college-name mb-0">{{ institution_name }}</p>
+            <div class="system-tag">
+                <i class="bi bi-calendar-check me-1"></i> Student Attendance Monitoring System
+            </div>
+        </div>
+
+        <!-- Portal Login Form -->
+        <div class="login-body">
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person-fill"></i></span>
+                        <input type="text"
+                               class="form-control"
+                               id="username"
+                               name="username"
+                               placeholder="Enter your username"
+                               autocomplete="username"
+                               required
+                               autofocus>
                     </div>
+                </div>
 
-                    <div class="mb-4">
-                        <label for="password" class="form-label fw-semibold">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-key"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
-                        <i class="bi bi-box-arrow-in-right me-2"></i> Log In
-                    </button>
-                </form>
-
-                <!-- Quick Fill Demo Credentials (Convenient for Evaluation) -->
-                <div class="mt-4 pt-3 border-top">
-                    <p class="text-muted small fw-semibold mb-2 text-center text-uppercase">Demo Credentials Quick-Fill</p>
-                    <div class="d-grid gap-2">
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="fillCredentials('admin', 'Admin@123')">
-                            <i class="bi bi-shield-lock me-1"></i> Admin: <strong>admin</strong>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="fillCredentials('turing', 'Teacher@123')">
-                            <i class="bi bi-person-video3 me-1"></i> Teacher: <strong>turing</strong>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="fillCredentials('student01', 'Student@123')">
-                            <i class="bi bi-mortarboard me-1"></i> Student: <strong>student01</strong> (Regular)
-                        </button>
-                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="fillCredentials('student05', 'Student@123')">
-                            <i class="bi bi-exclamation-triangle me-1"></i> Student: <strong>student05</strong> (Defaulter &lt;75%)
+                <div class="mb-4">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                        <input type="password"
+                               class="form-control"
+                               id="password"
+                               name="password"
+                               placeholder="Enter your password"
+                               autocomplete="current-password"
+                               required>
+                        <button class="btn btn-toggle-password"
+                                type="button"
+                                id="togglePasswordBtn"
+                                aria-label="Toggle password visibility"
+                                title="Show or hide password">
+                            <i class="bi bi-eye" id="toggleIcon"></i>
                         </button>
                     </div>
                 </div>
+
+                <button type="submit" class="btn login-submit-btn w-100">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Log In
+                </button>
+            </form>
+
+            <div class="login-security-notice">
+                <i class="bi bi-shield-lock-fill me-1 text-success"></i>
+                Authorized Institutional Access &bull; Role-Based Security
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
+{% block footer %}
+{# Left and right footer sections and container completely removed from login page #}
+{% endblock %}
+
 {% block extra_scripts %}
 <script>
-function fillCredentials(user, pass) {
-    document.getElementById('username').value = user;
-    document.getElementById('password').value = pass;
-}
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    if (toggleBtn && passwordInput && toggleIcon) {
+        toggleBtn.addEventListener('click', function() {
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('bi-eye');
+                toggleIcon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('bi-eye-slash');
+                toggleIcon.classList.add('bi-eye');
+            }
+        });
+    }
+});
 </script>
 {% endblock %}

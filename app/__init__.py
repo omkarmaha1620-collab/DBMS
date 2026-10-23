@@ -12,12 +12,12 @@ def create_app(config_class=Config):
     @app.context_processor
     def inject_global_context():
         ctx = {
-            'institution_name': 'Apex Institute of Technology',
+            'institution_name': 'Sree Siddaganga College of Arts, Science and Commerce for Women',
             'min_attendance_pct': 75.0,
             'unread_notifications_count': 0
         }
         try:
-            inst = get_system_setting('institution_name', 'Apex Institute of Technology')
+            inst = get_system_setting('institution_name', 'Sree Siddaganga College of Arts, Science and Commerce for Women')
             min_pct = get_min_attendance_percentage()
             ctx['institution_name'] = inst
             ctx['min_attendance_pct'] = min_pct

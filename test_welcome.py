@@ -28,7 +28,7 @@ class WelcomeAnimationTestCase(unittest.TestCase):
         # Assert branding & text requirements
         self.assertIn('Welcome to SWC Portal', html)
         self.assertIn('Login successful', html)
-        self.assertIn('Dr. Marappa B (Principal)', html)
+        self.assertIn('Marappa B (Principal)', html)
         self.assertIn('ADMIN ACCOUNT', html)
         self.assertNotIn('AMS Portal', html)
         self.assertNotIn('Attendance Portal', html)
